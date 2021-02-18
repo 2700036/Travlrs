@@ -14,13 +14,14 @@
   -ms-transition: 0.3s;
   -o-transition: 0.3s;
   transition: 0.3s;
-  /*Транзишн пора бы уже знать*/
+  border-radius: 35%;
   padding: 0;
   margin: 0;
 }
 
 .profile__edit-button:hover {
   opacity: 0.6;
+  background: #8EA737 url('../../../images/edit-icon.svg') center no-repeat;
 }
 
 @media screen and (max-width: 480px) {

@@ -2,7 +2,27 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
+  background: #0000003b;
   padding: 25px 20px;
-  /*Чтобы по ПЭПЭ отступы снизу-сверху одинаковые            */
+  position: absolute;
+  bottom: 0;
+  z-index: 5;
+  width: 100%;
+  box-sizing: border-box;
+  color: white;
+}
+.card__friend-description {
+  display: flex;
+  color: white;
+  align-items: center;
+  background: #0000003b;
+  padding: 15px 20px;
+  flex-direction: column;
+  align-items: flex-start;
+  position: absolute;
+  bottom: 0;
+  z-index: 5;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 88px;
 }

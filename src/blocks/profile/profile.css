@@ -10,14 +10,25 @@
   color: #fff;
   display: flex;
   align-items: center;
-  padding: 36px 0;
-  /*Если подгонять под ПЭПЭ, то тут padding: 40px 0; Проявите лоялити*/
+  padding: 36px 150px;
+  margin-bottom: 40px;
+  
+}
+
+@media screen and (max-width: 1000px) {
+  .profile {
+    
+    flex-direction: column;
+    
+    
+  }
 }
 
 @media screen and (max-width: 480px) {
   .profile {
     padding: 43px 0;
-    flex-direction: column;
+    
     text-align: center;
+    
   }
 }
