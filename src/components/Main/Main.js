@@ -9,67 +9,27 @@ import FriendCard from '../FriendCard/FriendCard';
 import WelcomeScreen from '../WelcomeScreen/WelcomeScreen';
 import { useSelector } from 'react-redux';
 import { useActions } from '../../reducers/useActions';
-import travlrsApi from '../../utils/travlrsApi';
+import List from '../List/List';
+import useTravlrsApi from '../../hooks/useTravlrsApi';
 
-const Main = ({ onAddCardSubmit, onDeleteCardSubmit }) => {
+const Main = () => {
   const {
     userInfo: { userName, userDescription, userAvatar, userId },
     openedPopup,
   } = useSelector(({ app }) => app);
   const { cards, users } = useSelector(({ cards }) => cards);
-  
-  const {
-    openEditProfilePopup,
-    openAddPlacePopup,
-    openEditAvatarPopup,
-    openDeleteCardConfirmPopup,
-    closePopups,
-    updateUserInfo,
-  } = useActions();
-
-  const handleEditSubmit = (userInfo) => {
-    travlrsApi.setUserInfo(userInfo).then(({ name, about }) => {
-      updateUserInfo({ userName: name, userDescription: about });
-      closePopups();
-    });
-  };
-
-  const onAvatarEditSubmit = (url) => {
-    travlrsApi.setUserAvatar(url).then(({ avatar }) => {
-      updateUserInfo({ userAvatar: avatar });
-      closePopups();
-    });
-  };
-
-  const makeListOfElements = (elements) => {
-    return elements.map((card) => {
-      const isLiked = card.likes.some(({ _id }) => userId === _id);
-      return (
-        <Card
-          
-          cardInfo={card}
-          onBasketClick={(e) => {
-            e.stopPropagation();
-            openDeleteCardConfirmPopup(card);
-          }}
-          key={card._id}
-          
-          
-        />
-      );
-    });
-  };
+  const { onDeleteCardSubmit } = useTravlrsApi();
 
   const sortedFavorites = cards
     .filter((card) => card.likes.some(({ _id }) => userId === _id))
     .sort((a, b) => {
       return b.likes.length - a.likes.length;
-    });    
-  const cardsElems = makeListOfElements(cards);
-  const favorites = makeListOfElements(sortedFavorites);
-  const friends = users.map((user) => {
-    return <FriendCard cardInfo={user} key={user._id} isUsersCard={userId === user._id} />;
-  });
+    });
+  const {
+    openEditProfilePopup,
+    openAddPlacePopup,
+    openEditAvatarPopup,    
+  } = useActions();
 
   return (
     <>
@@ -105,43 +65,35 @@ const Main = ({ onAddCardSubmit, onDeleteCardSubmit }) => {
         </div>
         <section className='places page__section'>
           <Route exact path='/' render={WelcomeScreen} />
-          <ul className='places__list'>
-            <Route
-              path='/cards/'
-              render={() => {
-                return cardsElems;
-              }}
-            />
-            <Route
-              path='/friends/'
-              render={() => {
-                return friends;
-              }}
-            />
-            <Route
-              path='/favorite/'
-              render={() => {
-                return favorites;
-              }}
-            />
-          </ul>
+          <Route
+            path='/cards/:id?'
+            render={() => {
+              return <List itemComponent={Card} items={cards} />;
+            }}
+          />
+          <Route
+            path='/friends/:id?'
+            render={() => {
+              return <List itemComponent={FriendCard} items={users} />;
+            }}
+          />
+          <Route
+            path='/favorite/:id?'
+            render={() => {
+              return <List itemComponent={Card} items={sortedFavorites} />;
+            }}
+          />
         </section>
       </main>
-      {openedPopup.isEditProfilePopupOpen && (
-        <EditForm
-          title='Редактировать профиль'
-          name='edit'
-          onClose={closePopups}
-          onSubmit={handleEditSubmit}
-        />
-      )}
+      {openedPopup.isEditProfilePopupOpen && 
+      <EditForm title='Редактировать профиль' name='edit' />}
       {openedPopup.isAddPlacePopupOpen && (
-        <PopupWithForm title='Предложить место' name='new-card' onClose={closePopups}>
-          <PlaceForm onAddCardSubmit={onAddCardSubmit} />
+        <PopupWithForm title='Предложить место' name='new-card'>
+          <PlaceForm />
         </PopupWithForm>
       )}
       {openedPopup.isDeleteCardPopupOpened && (
-        <PopupWithForm title='Вы уверены?' name='remove-card' onClose={closePopups}>
+        <PopupWithForm title='Вы уверены?' name='remove-card'>
           <form className='popup__form' name='remove-card' noValidate>
             <button type='submit' className='button popup__button' onClick={onDeleteCardSubmit}>
               Да
@@ -151,8 +103,8 @@ const Main = ({ onAddCardSubmit, onDeleteCardSubmit }) => {
       )}
       ;
       {openedPopup.isEditAvatarPopupOpen && (
-        <PopupWithForm title='Обновить аватар' name='edit-avatar' onClose={closePopups}>
-          <EditAvatar onAvatarEditSubmit={onAvatarEditSubmit} />
+        <PopupWithForm title='Обновить аватар' name='edit-avatar'>
+          <EditAvatar />
         </PopupWithForm>
       )}
     </>
