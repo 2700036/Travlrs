@@ -1,14 +1,17 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'react-router-dom';
+import { AppState, RootState } from '../reducers/types';
 import { useActions } from '../reducers/useActions';
 import { useCardsActions } from '../reducers/useCardsActions';
 import travlrsApi from '../utils/travlrsApi';
 
+
+
 export default function useTravlrsApi() {
-  const { selectedCard, userInfo } = useSelector(({ app }) => app);
+  const { selectedCard, userInfo } = useSelector(({ app }: RootState): AppState => app);
   const { updateUserInfo, logIn, updateAuthStatus, closePopups } = useActions();
-  const { cardsFill, addCard, deleteCard, usersFill } = useCardsActions();
+  const { fetchData, addCard, deleteCard } = useCardsActions();
   const history = useHistory();
 
   const loginCheck = () => {
@@ -17,7 +20,7 @@ export default function useTravlrsApi() {
       travlrsApi
         .checkToken(jwt)
         .then((res) => {
-          if(userInfo?.userId === res._id)return;
+          if (userInfo?.userId === res._id) return;
           updateUserInfo({
             userName: res.name,
             userDescription: res.about,
@@ -25,16 +28,8 @@ export default function useTravlrsApi() {
             userId: res._id,
             userEmail: res.email,
           });
-          Promise.all([travlrsApi.getCardList(), travlrsApi.getUsers()])
-          .then((res) => {
-            const [cardsData, users] = res;
-            cardsFill(cardsData);
-            usersFill(users);
-            logIn();
-          })
-          .catch((err) => {
-            console.log(err);
-            });
+          logIn();
+          fetchData(travlrsApi);
         })
         .catch((err) => {
           console.log(err);
@@ -46,12 +41,13 @@ export default function useTravlrsApi() {
     }
   };
 
-  const onDeleteCardSubmit = (e) => {
+  const onDeleteCardSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
     travlrsApi
-      .removeCard(selectedCard._id)
-      .then((res) => { 
-        deleteCard(selectedCard._id);
+      .removeCard(selectedCard?._id)
+      .then((res) => {
+        
+        deleteCard(selectedCard!._id);
         closePopups();
       })
       .catch((err) => {
@@ -59,7 +55,7 @@ export default function useTravlrsApi() {
       });
   };
 
-  const onAddCardSubmit = ({ name, link }) => {
+  const onAddCardSubmit = ({ name, link }: { name: string; link: string }) => {
     travlrsApi
       .addCard({ name, link })
       .then((card) => {
@@ -71,22 +67,25 @@ export default function useTravlrsApi() {
         console.log(err);
       });
   };
-  const handleEditSubmit = (userInfo) => {
+  const handleEditSubmit = (userInfo: { name: string; about: string }) => {
     travlrsApi.setUserInfo(userInfo).then(({ name, about }) => {
       updateUserInfo({ userName: name, userDescription: about });
       closePopups();
     });
   };
 
-  const onAvatarEditSubmit = (url) => {
+  const onAvatarEditSubmit = (url: { avatar: string }) => {
     travlrsApi.setUserAvatar(url).then(({ avatar }) => {
       updateUserInfo({ userAvatar: avatar });
       closePopups();
     });
   };
 
-
   return {
-    loginCheck, onDeleteCardSubmit, onAddCardSubmit, handleEditSubmit, onAvatarEditSubmit
-  }
+    loginCheck,
+    onDeleteCardSubmit,
+    onAddCardSubmit,
+    handleEditSubmit,
+    onAvatarEditSubmit,
+  };
 }
